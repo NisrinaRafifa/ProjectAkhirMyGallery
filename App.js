@@ -12,21 +12,6 @@ import { AuthContext } from './context/AuthContext';
 import Routes from './Routes';
 
 
-const Stack = createNativeStackNavigator();
-function AppNav () {
-    return(
-        <NavigationContainer>
-            <Stack.Navigator 
-                initialRouteName ='HomeGallery'
-                screenOptions={{headerShown: false}}>
-                <Stack.Screen name="Login" component={Login}></Stack.Screen>
-                <Stack.Screen name="HomeGallery" component={HomeGallery}></Stack.Screen>
-            </Stack.Navigator>
-
-        </NavigationContainer>
-    );
-}
-
 function Coba () {
   return(
     <NavigationContainer>
