@@ -6,15 +6,63 @@ import Header from '../components/header';
 import { AuthContext } from "../context/AuthContext";
 import { NavigationContainer} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ActivityIndicator } from "react-native";
+
 
 const Login =({navigation}) => {
 
-  const [email, setEmail] = useState('');
-  const [pass, setPass] = useState('');
-  const handleGoTo = (screen) => { 
-    navigation.navigate(screen);
+    const [isLoading, setIsLoading] = useState(false);
+    const [myData, setMyData] = useState({});
+    
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    
+    const handleGoTo = (screen) => { 
+        navigation.navigate(screen);
     };
- 
+
+    const getApiData = async () => {
+        if (username === '' || password === '') {
+          console.error('Username or password not filled');
+          return null;
+        }
+    
+        try {
+          setIsLoading(true);
+          const getData = await fetch(
+            'https://playgroundapi.com/bootcamp/api/web/user/login',
+            {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                username,
+                password,
+              }),
+            },
+          );
+          if (getData.status === 200) {
+            const results = await getData.json();
+            console.log(results);
+            setMyData(results);
+            setIsLoading(false);
+            await AsyncStorage.setItem('token', results.data.token);
+            navigation.navigate('HomeGallery');
+          }
+        } catch (e) {
+          console.error(e);
+        }
+    
+        return null;
+      };
+    
+      useEffect(() => {
+        console.log(myData);
+      }, [myData]);
+
   return (
     <ScrollView>
         <View style={{flex:1}}>
@@ -25,7 +73,7 @@ const Login =({navigation}) => {
             </View>
             <View style={{flex:3, backgroundColor:'#b8e0d2'}}>
                <View>
-                    <TextInput value={email} style={{
+                    <TextInput value={username} style={{
                     backgroundColor:'white', 
                     marginHorizontal:20, 
                     marginTop:20, 
@@ -34,12 +82,12 @@ const Login =({navigation}) => {
                     paddingLeft:20,
                     elevation:2,                  
                 }} 
-                    placeholder='Masukan Email'
-                    onChangeText={setEmail}>
+                    placeholder='Masukan Username'
+                    onChangeText={setUsername}>
                     </TextInput>
                </View>
                <View>
-                    <TextInput value={pass} style={{
+                    <TextInput value={password} style={{
                     backgroundColor:'white', 
                     marginHorizontal:20, 
                     marginTop:20, 
@@ -49,7 +97,7 @@ const Login =({navigation}) => {
                     elevation:2,                  
                 }} 
                     placeholder='Masukan Password'
-                    onChangeText={setPass}>
+                    onChangeText={setPassword}>
                     </TextInput>
                </View>
 
@@ -58,8 +106,8 @@ const Login =({navigation}) => {
                 <Button
                     title='Login'
                     color={'#76a092'}
-                    onPress={() => handleGoTo('HomeGallery')}>
-                </Button>
+                    onPress={() => getApiData()} />
+                    {isLoading ? <ActivityIndicator /> : null}
             </View>
                 
             </View>
